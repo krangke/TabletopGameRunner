@@ -5,7 +5,7 @@ from roster import Cost, Category, Profile, Rule, Selection
 from ImportRoster import parse_roster
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, roster):
         super().__init__()
         self.setWindowTitle("Roster Classes")
         self.setGeometry(100, 100, 600, 400)
@@ -30,20 +30,23 @@ class MainWindow(QMainWindow):
             "Category": ["id", "name", "entryId", "primary"],
             "Profile": ["id", "name", "hidden", "typeId", "typeName"],
             "Rule": ["id", "name", "publicationId", "page", "hidden"],
-            "Selection": ["id", "name", "entryId", "number", "type"]
+            "Selection": ["id", "name", "entryId", "number", "type"],
+            "Force": ["id", "name", "entryId", "catalogueId", "catalogueRevision", "catalogueName"]
         }
 
-        for class_name, attributes in classes.items():
-            class_item = QStandardItem(class_name)
-            for attribute in attributes:
-                attr_item = QStandardItem(attribute)
-                class_item.appendRow(attr_item)
-            self.model.appendRow(class_item)
+        for force in roster.forces:
+            force_item = QStandardItem(str(getattr(force, "name", '')))
+            
+            for selection in force.selections:
+                if selection.type == "model" or selection.type == "unit":
+                    selection_item = QStandardItem(str(getattr(selection, "name", '')))
+                    force_item.appendRow(selection_item)
+            self.model.appendRow(force_item)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # Example usage
     roster = parse_roster('Dan\'s Space Marines(10th).ros')
-    window = MainWindow()
+    window = MainWindow(roster)
     window.show()
     sys.exit(app.exec())
