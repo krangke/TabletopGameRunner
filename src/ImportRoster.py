@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
-from roster import Cost, Category, Profile, Rule, Selection, Force, Roster
+from roster import Cost, Category, Profile, Rule, Selection, Force, Roster, Characteristic
+import pdb
 
 namespace = {'ns': 'http://www.battlescribe.net/schema/rosterSchema'}
 
@@ -17,11 +18,23 @@ def parse_categories(categories_element):
             categories.append(Category(category.get('id'), category.get('name'), category.get('entryId'), category.get('primary') == 'true'))
     return categories
 
+def parse_characteristics(characteristics_element):
+    characteristics = []
+    if characteristics_element is not None:
+        for characteristic in characteristics_element.findall('ns:characteristic', namespace):
+            characteristics.append(Characteristic(characteristic.get('name'), characteristic.get('typeId'), characteristic.text))
+    return characteristics
+
+def parse_profile(profile_element):
+    profile = Profile(profile_element.get('id'), profile_element.get('name'), profile_element.get('hidden') == 'false', profile_element.get('typeId'), profile_element.get('typeName'))
+    profile.characteristics = parse_characteristics(profile_element.find('ns:characteristics', namespace))
+    return profile
+
 def parse_profiles(profiles_element):
     profiles = []
     if profiles_element is not None:
         for profile in profiles_element.findall('ns:profile', namespace):
-            profiles.append(Profile(profile.get('id'), profile.get('name'), profile.get('hidden') == 'false', profile.get('typeId'), profile.get('typeName')))
+            profiles.append(parse_profile(profile))
     return profiles
 
 def parse_rules(rules_element):
